@@ -87,7 +87,9 @@ while IFS= read -r isoform; do
 done < tmp_${isoforms_locations}
 
 ISOFORMS_NOT_FOUND=$(grep -c '^_*_*_' $isoforms_locations)
-
+ 
+grep -v '^_*_*_' ${isoforms_locations} > tmp_${isoforms_locations}
+cat tmp_${isoforms_locations} > ${isoforms_locations}
 
 echo -e "\e[31mTrinity Isoforms found  but not found in RefSeq \e[34m Fraction: ${FRACTION}\e[0m" > 'log.txt'
 bedtools intersect -a "$isoforms_locations" -b mm39_genes.bed -f $FRACTION  -wa -wb  -v >> 'log.txt'
