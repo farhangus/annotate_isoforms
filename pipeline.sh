@@ -90,9 +90,9 @@ ISOFORMS_NOT_FOUND=$(grep -c '^_*_*_' $isoforms_locations)
 
 
 echo -e "\e[31mTrinity Isoforms found  but not found in RefSeq \e[34m Fraction: ${FRACTION}\e[0m" > 'log.txt'
-bedtools intersect -a isoform_locations.bed -b mm39_genes.bed -f $FRACTION  -wa -wb  -v >> 'log.txt'
+bedtools intersect -a "$isoforms_locations" -b mm39_genes.bed -f $FRACTION  -wa -wb  -v >> 'log.txt'
 echo -e "\e[31mIsoforms intersection between Trinity and RefSeq \e[34m Fraction: ${FRACTION}\e[0m" >> 'log.txt'
-bedtools intersect -a isoform_locations.bed -b mm39_genes.bed -f $FRACTION  -wa -wb  >> 'log.txt'
+bedtools intersect -a "$isoforms_locations" -b mm39_genes.bed -f $FRACTION  -wa -wb  >> 'log.txt'
 awk '!seen[$1,$2,$3]++' log.txt  > "$OUTPUT_FILE"
 echo -e "\e[31m***************************************************************************************\e[0m" > STATS.log
 NUMBER_OF_ISOFORMS="$(grep -v '^\s*$' ${ISOFORMS_LIST} | wc -l  | grep -o '[0-9]*' )"
