@@ -4,3 +4,6 @@ mm39_egens
 STATS.log
 *.names
 *.log
+240430_01.02_CREvsPURO.csv
+tmp*
+venv
