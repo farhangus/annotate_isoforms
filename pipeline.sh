@@ -7,7 +7,7 @@ echo -e "\e[31mOptions:\e[0m"
 echo -e "\e[31m  -h,--help             Display this help message\e[0m"
 echo -e "\e[31m  -o,--output           output_file_path                            default=current_directory\e[0m"
 echo -e "\e[31m  -f,--fraction         Similarity fraction                         default=0.9\e[0m"
-echo -e "\e[31m  -c,--FC-threshhold    FC threshhold                               default=0.7\e[0m"
+echo -e "\e[31m  -c,--FC-threshhold    FC threshhold                               default=7\e[0m"
 echo -e "\e[31m  -p,--prefix           prefix                                      default=\"annotated_\"\e[0m"
 echo -e "\e[31m  -i,--input-file       <isoforms_list.names | isoforms_table.csv>  Input isoforms_list file\e[0m"
 echo -e "\e[31m  -b,--bed              <provided_bedfile>                          Provided BED file\e[0m"
@@ -128,6 +128,7 @@ echo "Total Number of Isoforms: ${NUMBER_OF_ISOFORMS}" >> "${OUTPUT_FILE}/${PREF
 echo "Isoforms Not Found: ${ISOFORMS_NOT_FOUND}" >> "${OUTPUT_FILE}/${PREFIX}STATS.txt"
 awk '{print $4}' "${OUTPUT_FILE}/${PREFIX}isoform_result.txt" | sort | uniq -c | awk '$1 > 1' > "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms_names.txt"
 awk '{print$2}' "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms_names.txt" | sort | uniq | grep -Ff - "${OUTPUT_FILE}/${PREFIX}isoform_result.txt" > "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms.txt"
+rm "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms_names.txt"
 
 ISOFORMS_TRINITY=$(awk '/Trinity Isoforms found /{flag=1; next} /Isoforms intersection between Trinity and RefSeq/{ exit} {if(flag) {count++}} END {print count}' "${OUTPUT_FILE}/${PREFIX}isoform_result.txt")
 ISOFORMS_TRINITY_UNIQ=$(awk '/Trinity Isoforms found /{flag=1; next} /Isoforms intersection between Trinity and RefSeq/{ exit} {if(flag) {count++}} END {print count}' "${OUTPUT_FILE}/${PREFIX}uniq_isoform_result.txt")
