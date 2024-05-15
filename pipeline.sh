@@ -102,13 +102,14 @@ rm -f $isoforms_locations
 # Iterate through each line in the ISOFORM_INPUT_FILE file
 while IFS= read -r isoform; do
     # Check if the isoform exists in the provided BED file
-    if grep -q "$isoform" "$PROVIDED_BEDFILE"; then
+    if grep -q -w "$isoform" "$PROVIDED_BEDFILE"; then
         # Get the lines from the BED file matching the isoform
-        grep "$isoform" "$PROVIDED_BEDFILE" >> $isoforms_locations
+        grep -w "$isoform" "$PROVIDED_BEDFILE" >> $isoforms_locations
     else 
         echo -e "_\t _\t _\t ${isoform}" >> $isoforms_locations
     fi
 done < ${tmp_isoforms_locations}
+
 grep '^_*_*_' $isoforms_locations > "${OUTPUT_FILE}/${PREFIX}Not_found_isoforms.txt"
 ISOFORMS_NOT_FOUND=$(grep -c '^_*_*_' $isoforms_locations)
  
@@ -119,7 +120,7 @@ echo -e "\e[31mTrinity Isoforms found  but not found in RefSeq \e[34m Fraction: 
 bedtools intersect -a "$isoforms_locations" -b mm39_genes.bed -f $FRACTION  -wa -wb  -v >> "${OUTPUT_FILE}/${PREFIX}log_all_matches.txt"
 echo -e "\e[31mIsoforms intersection between Trinity and RefSeq \e[34m Fraction: ${FRACTION}\e[0m" >> "${OUTPUT_FILE}/${PREFIX}log_all_matches.txt"
 bedtools intersect -a "$isoforms_locations" -b mm39_genes.bed -f $FRACTION  -wa -wb  >> "${OUTPUT_FILE}/${PREFIX}log_all_matches.txt"
-awk '!seen[$1,$2,$3]++' "${OUTPUT_FILE}/${PREFIX}log_all_matches.txt"  > "${OUTPUT_FILE}/${PREFIX}isoform_result.txt"
+awk '!seen[$1,$2,$3,$4]++' "${OUTPUT_FILE}/${PREFIX}log_all_matches.txt"  > "${OUTPUT_FILE}/${PREFIX}isoform_result.txt"
 echo -e "\e[31m***************************************************************************************\e[0m" > "${OUTPUT_FILE}/${PREFIX}STATS.txt"
 NUMBER_OF_ISOFORMS="$(grep -v '^\s*$' ${ISOFORM_INPUT_FILE} | wc -l  | grep -o '[0-9]*' )"
 awk '!seen[$4]++' "${OUTPUT_FILE}/${PREFIX}isoform_result.txt" > "${OUTPUT_FILE}/${PREFIX}uniq_isoform_result.txt"
@@ -128,7 +129,7 @@ echo "Total Number of Isoforms: ${NUMBER_OF_ISOFORMS}" >> "${OUTPUT_FILE}/${PREF
 echo "Isoforms Not Found: ${ISOFORMS_NOT_FOUND}" >> "${OUTPUT_FILE}/${PREFIX}STATS.txt"
 awk '{print $4}' "${OUTPUT_FILE}/${PREFIX}isoform_result.txt" | sort | uniq -c | awk '$1 > 1' > "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms_names.txt"
 awk '{print$2}' "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms_names.txt" | sort | uniq | grep -Ff - "${OUTPUT_FILE}/${PREFIX}isoform_result.txt" > "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms.txt"
-rm "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms_names.txt"
+rm -f "${OUTPUT_FILE}/${PREFIX}duplicated_isoforms_names.txt"
 
 ISOFORMS_TRINITY=$(awk '/Trinity Isoforms found /{flag=1; next} /Isoforms intersection between Trinity and RefSeq/{ exit} {if(flag) {count++}} END {print count}' "${OUTPUT_FILE}/${PREFIX}isoform_result.txt")
 ISOFORMS_TRINITY_UNIQ=$(awk '/Trinity Isoforms found /{flag=1; next} /Isoforms intersection between Trinity and RefSeq/{ exit} {if(flag) {count++}} END {print count}' "${OUTPUT_FILE}/${PREFIX}uniq_isoform_result.txt")
