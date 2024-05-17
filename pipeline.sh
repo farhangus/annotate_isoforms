@@ -82,7 +82,7 @@ fi
 
 # Process the input file if it's a CSV file
 if [[ "${ISOFORM_INPUT_FILE##*.}" == "csv" ]]; then
-    python3 report_isoforms_names.py -f "${ISOFORM_INPUT_FILE}" -t "${FOLD_CHANGE_THRESHOLD}" -o ${OUTPUT_FILE}
+    python3 cli.py -f "${ISOFORM_INPUT_FILE}" -t "${FOLD_CHANGE_THRESHOLD}" -o ${OUTPUT_FILE}
     ISOFORM_INPUT_FILE="${OUTPUT_FILE}/csv_to_bed.bed"
 fi
 
