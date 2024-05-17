@@ -13,3 +13,4 @@ Trinity_trans.isoform.counts.matrix.Cre_R1.RSEM_vs_Puro_R1.RSEM.edgeR.DE_results
 Untitled.ipynb
 *.csv
 __pycache__/
+.*

@@ -4,20 +4,24 @@
 display_annotate_pipeline_usage() {
     # Display options in red color
     echo -e "\e[31mOptions:\e[0m"
-    echo -e "\e[31m  -h,--help             Display this help message\e[0m"
-    echo -e "\e[31m  -o,--output           output_file_path                            default=current_directory\e[0m"
-    echo -e "\e[31m  -f,--fraction         Similarity fraction                         default=0.9\e[0m"
-    echo -e "\e[31m  -c,--FC-threshold     FC threshold                                default=7\e[0m"
-    echo -e "\e[31m  -p,--prefix           prefix                                      default=\"annotated_\"\e[0m"
-    echo -e "\e[31m  -i,--input-file       <isoforms_list.names | isoforms_table.csv>  Input isoforms_list file\e[0m"
-    echo -e "\e[31m  -b,--bed              <provided_bedfile>                          Provided BED file\e[0m"
-    echo -e "\e[31m  -r,--reference        <REF>                                       Reference FASTA file\e[0m"
+    echo -e "\e[31m  -h, --help             Display this help message\e[0m"
+    echo -e "\e[31m  -o, --output           Output file path (default: current directory)\e[0m"
+    echo -e "\e[31m  -f, --fraction         Similarity fraction (default: 0.9)\e[0m"
+    echo -e "\e[31m  -m, --margin           margin base pairs (default: 0)\e[0m"
+    echo -e "\e[31m  -c, --FC-threshold     Fold Change (FC) threshold (default: 7)\e[0m"
+    echo -e "\e[31m  -p, --prefix           Prefix for output files (default: \"annotated_\")\e[0m"
+    echo -e "\e[31m  -i, --input-file       <isoforms_list.names | isoforms_table.csv> Input isoforms list file\e[0m"
+    echo -e "\e[31m  -b, --bed              <provided_bedfile> Provided BED file\e[0m"
+    echo -e "\e[31m  -r, --reference        <REF> Reference FASTA file\e[0m"
+    
     # Display sample command in blue color
-    echo -e "\e[34mSample command for run:\e[0m"
+    echo -e "\e[34mSample command to run:\e[0m"
     echo -e "\e[34m./pipeline.sh -i list_isoforms.names -b Trinity.bed -r Reference.bed -o annotation_results -p Trinity_\e[0m"
-    # Reset color
-    echo -e "\e[0m"
+    
+    # Additional note
+    echo -e "\e[0m** If the provided file is a CSV, it must include columns titled logFC, P.Value, and isoform_name.\e[0m"
 }
+
 
 # Initialize variables
 ISOFORM_INPUT_FILE=""
@@ -27,7 +31,7 @@ OUTPUT_FILE="$(pwd)"
 PREFIX="annotated_"
 FRACTION=0.9
 FOLD_CHANGE_THRESHOLD=7
-
+MARGIN=0
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -59,6 +63,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -f|--fraction)
             FRACTION=$2
+            shift 2
+            ;;
+        -m|--margin)
+            MARGIN=$2
             shift 2
             ;;
         -h|--help)
@@ -95,6 +103,7 @@ fi
 
 # Temporary file for isoform locations
 tmp_isoforms_locations=$(mktemp)
+new_isoforms_locations=$(mktemp)
 isoforms_locations="${OUTPUT_FILE}/${PREFIX}isoforms_locations.txt"
 
 # Remove empty lines from input file and write to temp file
@@ -120,6 +129,10 @@ ISOFORMS_NOT_FOUND=$(grep -c '^_*_*_' $isoforms_locations)
 # Remove not found isoforms from the locations file
 grep -v '^_*_*_' ${isoforms_locations} > ${tmp_isoforms_locations}
 cat ${tmp_isoforms_locations} > ${isoforms_locations}
+sed '/^$/d' ${isoforms_locations} > ${tmp_isoforms_locations}
+awk -v margin="$MARGIN" '{print$1, $2 - margin, $3 + margin, $4}' ${tmp_isoforms_locations} > ${isoforms_locations}
+sed -i 's/ \+/	/g' ${isoforms_locations}
+
 
 # Log and intersect with reference
 echo -e "\e[31mTrinity Isoforms found but not found in RefSeq \e[34m Fraction: ${FRACTION}\e[0m" > "${OUTPUT_FILE}/${PREFIX}log_all_matches.txt"
