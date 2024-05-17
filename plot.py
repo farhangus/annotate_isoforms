@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_volcano(logFC, neg_log_P_Value, colors, output):
+def plot_volcano(logFC, neg_log_P_Value, colors, output, prefix):
     legend_labels = {
         "gray": "Non-Significant",
         "red": "Positive FC",
@@ -26,4 +26,4 @@ def plot_volcano(logFC, neg_log_P_Value, colors, output):
     plt.ylabel("-log10(P.Value)")
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"{output}/volcano_grouped.png")
+    plt.savefig(f"{output}/{prefix}volcano_grouped.png")
