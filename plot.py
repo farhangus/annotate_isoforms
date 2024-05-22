@@ -23,7 +23,8 @@ def plot_volcano(logFC, neg_log_P_Value, colors, output, prefix):
 
     plt.title("Volcano Plot for all samples")
     plt.xlabel("logFC (Fold Change)")
-    plt.ylabel("-log10(P.Value)")
+    #plt.ylabel("-log10(P.Value)")
+    plt.ylabel("-log10 FDR")
     plt.legend()
     plt.grid(True)
     plt.savefig(f"{output}/{prefix}volcano_grouped.png")

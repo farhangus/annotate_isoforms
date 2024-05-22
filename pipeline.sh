@@ -20,6 +20,8 @@ display_annotate_pipeline_usage() {
     
     # Additional note
     echo -e "\e[0m** If the provided file is a CSV, it must include columns titled logFC, P.Value, and isoform_name.\e[0m"
+    echo -e "\e[0m** After adding the margin, the start and end positions of the isoforms will be modified in the output based on the given margin.\e[0m"
+
 }
 
 
@@ -130,7 +132,7 @@ ISOFORMS_NOT_FOUND=$(grep -c '^_*_*_' $isoforms_locations)
 grep -v '^_*_*_' ${isoforms_locations} > ${tmp_isoforms_locations}
 cat ${tmp_isoforms_locations} > ${isoforms_locations}
 sed '/^$/d' ${isoforms_locations} > ${tmp_isoforms_locations}
-awk -v margin="$MARGIN" '{print$1, $2 - margin, $3 + margin, $4}' ${tmp_isoforms_locations} > ${isoforms_locations}
+awk -v margin="$MARGIN" '{start = ($2 - margin < 0) ? 0 : $2 - margin; print $1, start, $3 + margin, $4}' ${tmp_isoforms_locations}  > ${isoforms_locations}
 sed -i 's/ \+/	/g' ${isoforms_locations}
 
 
