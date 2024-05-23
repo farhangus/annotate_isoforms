@@ -20,7 +20,7 @@ display_annotate_pipeline_usage() {
     echo -e "\e[34m./pipeline.sh -i list_isoforms.names -b Trinity.bed -r Reference.bed -o annotation_results -p Trinity_\e[0m"
     
     # Additional note
-    echo -e "\e[0m** If the provided file is a CSV, it must include columns titled logFC, P.Value, and isoform_name.\e[0m"
+    echo -e "\e[0m** If the provided file is a CSV, it must include columns titled logFC, FDR, and isoform_name.\e[0m"
     echo -e "\e[0m** After adding the margin, the start and end positions of the isoforms will be modified in the output based on the given margin.\e[0m"
 
 }
@@ -36,6 +36,7 @@ FRACTION=0.9
 FOLD_CHANGE_THRESHOLD=7
 FDR_THRESHOLD=.3
 MARGIN=0
+CSV_FLAG=0
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -98,6 +99,8 @@ fi
 
 # Process the input file if it's a CSV file
 if [[ "${ISOFORM_INPUT_FILE##*.}" == "csv" ]]; then
+    ROW_ISOFORM_INPUT_FILE=$ISOFORM_INPUT_FILE
+    CSV_FLAG=1
     python3 cli.py -f "${ISOFORM_INPUT_FILE}" -t "${FOLD_CHANGE_THRESHOLD}" -o ${OUTPUT_FILE} -p ${PREFIX} -d ${FDR_THRESHOLD}
     ISOFORM_INPUT_FILE="${OUTPUT_FILE}/${PREFIX}csv_to_bed.bed"
 fi
@@ -169,3 +172,38 @@ echo "Number of Isoforms Exclusively Reported in Trinity: ${ISOFORMS_TRINITY}" >
 echo "Number of Shared Isoforms: $((total_isoform_found - ISOFORMS_TRINITY - 2))" >> "${OUTPUT_FILE}/${PREFIX}STATS.txt"
 echo "Number of Unique Isoforms Exclusively Reported in Trinity: ${ISOFORMS_TRINITY_UNIQ}" >> "${OUTPUT_FILE}/${PREFIX}STATS.txt"
 echo "Number of Shared Unique Isoforms: $((total_isoform_found_uniq - ISOFORMS_TRINITY_UNIQ - 2))" >> "${OUTPUT_FILE}/${PREFIX}STATS.txt"
+
+# genarte the results of exlcusve trinity isoforms with down and up regualted amounts
+awk '/Trinity Isoforms found/{flag=1; next} /Isoforms intersection between Trinity and RefSeq/{flag=0} flag' \
+    "${OUTPUT_FILE}/${PREFIX}uniq_isoform_result.txt" > "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only.txt"
+
+if [ CSV_FLAG==1 ]
+then
+    if [ -s "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only.txt" ]; then
+        while IFS= read -r line; do
+            echo -ne "$line     " >> "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only_up_down_regulated.txt"
+            isoform=$(awk '{print$4}' <<< $line) 
+            # echo $isoform 
+            grep -w $isoform  ${ROW_ISOFORM_INPUT_FILE} >> "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only_up_down_regulated.txt"
+        done < "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only.txt"
+    else
+        echo "The file is empty"
+    fi
+sed -i 's/,/\t/g' "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only_up_down_regulated.txt"
+cat "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only_up_down_regulated.txt"
+awk '{print$6}' "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only_up_down_regulated.txt"
+while read -r value; do
+    # Check if the value is numeric
+    if [[ "$value" =~ ^-?[0-9]*\.?[0-9]+$ ]]; then
+        # Check if the value is positive
+        if (( $(echo "$value > 0" | bc -l) )); then
+            (( positive++ ))
+        # Check if the value is negative
+        elif (( $(echo "$value < 0" | bc -l) )); then
+            (( negative++ ))
+        fi
+    fi
+done <<< "$(awk '{print$6}' "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only_up_down_regulated.txt")"
+echo "upregulated: $positive, downregulated: $negative"
+
+fi
