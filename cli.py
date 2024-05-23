@@ -18,6 +18,12 @@ from plot import plot_volcano
     help="Threshold value for significant Fold Change points",
 )
 @click.option(
+    "-d",
+    "--fdr",
+    default=0.3,
+    help="Threshold value for FDR",
+)
+@click.option(
     "-o",
     "--output",
     type=str,
@@ -31,7 +37,7 @@ from plot import plot_volcano
     default="",
     help="prefix",
 )
-def main(file_path, threshold, output, prefix):
+def main(file_path, threshold, output, prefix, fdr):
     if file_path is None:
         click.echo(
             "Please provide the path to the CSV file using -f or --file_path option."
@@ -49,21 +55,22 @@ def main(file_path, threshold, output, prefix):
 
     logFC = df["logFC"]
     P_Value = df["P.Value"]
-    FDR=df["FDR"]
+    FDR = df["FDR"]
     neg_log_P_Value = -np.log10(P_Value)
     FC_significant_threshold = threshold
-
+    FDR_RTIO = fdr
     colors = np.where(
-    FDR > 0.3, "gray",
-    np.where(
-        logFC > FC_significant_threshold, "red",
-        np.where(logFC < -FC_significant_threshold, "blue", "gray")
+        FDR > FDR_RTIO,
+        "gray",
+        np.where(
+            logFC > FC_significant_threshold,
+            "red",
+            np.where(logFC < -FC_significant_threshold, "blue", "gray"),
+        ),
     )
-)
-    filtered_lines = df[(abs(logFC) > FC_significant_threshold) & (FDR <= 0.3) ]
-    print(filtered_lines)
+    filtered_lines = df[(abs(logFC) > FC_significant_threshold) & (FDR <= FDR_RTIO)]
     # filtered_lines = df[ P_Value < 0.05 ]
-   # filtered_lines = df[(abs(df['logFC']) > FC_significant_threshold) & (df[P_Value] < 0.05)]
+    # filtered_lines = df[(abs(df['logFC']) > FC_significant_threshold) & (df[P_Value] < 0.05)]
 
     print(f"Number of extracted isoforms: {len(filtered_lines)}")
     with open(f"{output}/{prefix}csv_to_bed.bed", "w") as f:
@@ -71,8 +78,8 @@ def main(file_path, threshold, output, prefix):
             f.write(f"{row['isoform_name']}\n")
 
     neg_log_FDR = -np.log10(FDR)
-    plot_volcano(logFC,neg_log_FDR,colors, output, prefix)
-    
+    plot_volcano(logFC, neg_log_FDR, colors, output, prefix)
+
 
 if __name__ == "__main__":
     main()

@@ -8,6 +8,7 @@ display_annotate_pipeline_usage() {
     echo -e "\e[31m  -o, --output           Output file path (default: current directory)\e[0m"
     echo -e "\e[31m  -f, --fraction         Similarity fraction (default: 0.9)\e[0m"
     echo -e "\e[31m  -m, --margin           margin base pairs (default: 0)\e[0m"
+    echo -e "\e[31m  -f, --fdr              FDR Threshold (default: 0.3) \e[0m"
     echo -e "\e[31m  -c, --FC-threshold     Fold Change (FC) threshold (default: 7)\e[0m"
     echo -e "\e[31m  -p, --prefix           Prefix for output files (default: \"annotated_\")\e[0m"
     echo -e "\e[31m  -i, --input-file       <isoforms_list.names | isoforms_table.csv> Input isoforms list file\e[0m"
@@ -33,6 +34,7 @@ OUTPUT_FILE="$(pwd)"
 PREFIX="annotated_"
 FRACTION=0.9
 FOLD_CHANGE_THRESHOLD=7
+FDR_THRESHOLD=.3
 MARGIN=0
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
@@ -71,6 +73,10 @@ while [[ $# -gt 0 ]]; do
             MARGIN=$2
             shift 2
             ;;
+        -d|--fdr)
+            FDR_THRESHOLD=$2
+            shift 2
+            ;;
         -h|--help)
             display_annotate_pipeline_usage
             exit 0
@@ -92,7 +98,7 @@ fi
 
 # Process the input file if it's a CSV file
 if [[ "${ISOFORM_INPUT_FILE##*.}" == "csv" ]]; then
-    python3 cli.py -f "${ISOFORM_INPUT_FILE}" -t "${FOLD_CHANGE_THRESHOLD}" -o ${OUTPUT_FILE} -p${PREFIX}
+    python3 cli.py -f "${ISOFORM_INPUT_FILE}" -t "${FOLD_CHANGE_THRESHOLD}" -o ${OUTPUT_FILE} -p ${PREFIX} -d ${FDR_THRESHOLD}
     ISOFORM_INPUT_FILE="${OUTPUT_FILE}/${PREFIX}csv_to_bed.bed"
 fi
 
