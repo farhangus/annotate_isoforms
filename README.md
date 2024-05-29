@@ -50,5 +50,6 @@ Annotate_Trinity_isoforms is a mixture of Bash and Python packages that, through
 ## Sample Usage
 
 ```sh
+For the provided CSV file, the columns named logFC, FDR, and isoform_name are required. If your CSV file has different names for these columns, please manipulate them accordingly.
 ./pipeline.sh --input-file DEG_FULL.csv --output tmp_sample_output/ --bed sorted_Trinity_all_samples_gmap.bed --reference mm39_genes.bed --similarity-fraction 0.90 --FC-threshold 6 --fdr 0.01
 
