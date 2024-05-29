@@ -6,9 +6,9 @@ display_annotate_pipeline_usage() {
     echo -e "\e[31mOptions:\e[0m"
     echo -e "\e[31m  -h, --help             Display this help message\e[0m"
     echo -e "\e[31m  -o, --output           Output file path (default: current directory)\e[0m"
-    echo -e "\e[31m  -f, --fraction         Similarity fraction (default: 0.9)\e[0m"
+    echo -e "\e[31m  -f, --similarity-fraction         Similarity fraction (default: 0.9)\e[0m"
     echo -e "\e[31m  -m, --margin           margin base pairs (default: 0)\e[0m"
-    echo -e "\e[31m  -f, --fdr              FDR Threshold (default: 0.3) \e[0m"
+    echo -e "\e[31m  -d, --fdr              FDR Threshold (default: 0.3) \e[0m"
     echo -e "\e[31m  -c, --FC-threshold     Fold Change (FC) threshold (default: 7)\e[0m"
     echo -e "\e[31m  -p, --prefix           Prefix for output files (default: \"annotated_\")\e[0m"
     echo -e "\e[31m  -i, --input-file       <isoforms_list.names | isoforms_table.csv> Input isoforms list file\e[0m"
@@ -63,7 +63,7 @@ while [[ $# -gt 0 ]]; do
             PREFIX=$2
             shift 2
             ;;
-        -f|--fraction)
+        -f|--similarity-fraction)
             FRACTION=$2
             shift 2
             ;;
@@ -209,3 +209,5 @@ then
     echo "upregulated: $positive, downregulated: $negative"  >> $tmp_file
     mv $tmp_file "${OUTPUT_FILE}/${PREFIX}uniq_isoforms_trinty_only_up_down_regulated.txt"
 fi
+rm "${OUTPUT_FILE}/${PREFIX}csv_to_bed.bed"
+
