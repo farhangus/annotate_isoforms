@@ -45,6 +45,7 @@ Annotate_Trinity_isoforms is a mixture of Bash and Python packages that, through
 - `click` library
 - `pandas` library
 - `numpy` library
+- `matplotlib` library
 - `bedtools` installed and added to your system's PATH
 
 ## Sample Usage
