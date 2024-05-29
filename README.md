@@ -43,5 +43,4 @@ Annotate_Trinity_isoforms is a mixture of Bash and Python packages that, through
 ## Sample Usage
 
 ```sh
-./pipeline.sh -i DEG_FULL.csv -o tmp/sample_output_folder --bed sorted_Trinity_all_samples_gmap.bed --reference mm39_genes.bed --fraction 0.9 --FC-threshold 6 --fdr 0.01
-
+./pipeline.sh --input-file DEG_FULL.csv --output tmp_sample_output/ --bed sorted_Trinity_all_samples_gmap.bed --reference mm39_genes.bed  --similarit-fraction 0.90  --FC-threshold 6 --fdr 0.01
